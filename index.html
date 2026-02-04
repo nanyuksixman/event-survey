@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이벤트 결과 확인</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; padding-top: 100px; }
+        .loader { font-size: 24px; font-weight: bold; color: #333; line-height: 1.6; }
+    </style>
+    <script>
+        // ▼▼▼ 설정 구간 (이곳을 수정하세요) ▼▼▼
+        
+        // 1. 당첨 확률 (현재 1/30 = 약 3.3%)
+        var winRate = 1 / 30; 
+
+        // 2. 당첨됐을 때 이동할 주소 (경품 받을 정보 입력 폼)
+        var winLink = "https://naver.me/5suDTShI"; 
+
+        // 3. 꽝일 때 이동할 주소 (회사 홈페이지 등)
+        var loseLink = "https://naver.me/5HydanVz";
+
+        // ▲▲▲ 설정 끝 ▲▲▲
+
+        function checkLuck() {
+            var randomNum = Math.random(); 
+            
+            if (randomNum < winRate) {
+                alert("축하합니다! 당첨되셨습니다!\n정보 입력 페이지로 이동합니다.");
+                window.location.href = winLink;
+            } else {
+                alert("아쉽게도 당첨되지 않았습니다. \n참여해 주셔서 감사합니다.");
+                window.location.href = loseLink;
+            }
+        }
+
+        window.onload = function() {
+            setTimeout(checkLuck, 1500); // 1.5초 두근두근 대기
+        };
+    </script>
+</head>
+<body>
+    <div class="loader">
+        결과를 추첨하고 있습니다...<br>
+        잠시만 기다려주세요!
+    </div>
+</body>
+</html>
