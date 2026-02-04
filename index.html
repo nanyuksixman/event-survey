@@ -1,39 +1,83 @@
-<script>
-        // ============================================================
-        // [테스트 모드] 테스트를 위해 확률을 1(100%)로 설정했습니다.
-        // 메일이 잘 오면 나중에 1/30 으로 다시 바꾸세요.
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>행운권 테스트 중</title>
+    <style>
+        body { font-family: 'Apple SD Gothic Neo', sans-serif; text-align: center; padding-top: 50px; background-color: #f9f9f9; }
+        h2 { color: #333; margin-bottom: 30px; }
+        #status { font-size: 16px; color: #555; min-height: 60px; line-height: 1.6; padding: 20px; }
+        .code-box { 
+            background: white; padding: 20px 40px; font-size: 28px; 
+            font-weight: bold; color: #d32f2f; margin: 30px auto; 
+            width: fit-content; border: 3px dashed #d32f2f; border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: none; 
+        }
+        .loader { font-size: 40px; margin-bottom: 20px; animation: spin 1s infinite linear; display: inline-block;}
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        /* 에러 메시지 박스 스타일 */
+        .error-log {
+            background-color: #fee; color: #c00; 
+            border: 1px solid #fcc; padding: 15px; 
+            margin: 20px; font-size: 12px; text-align: left;
+            word-break: break-all;
+        }
+    </style>
+    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
+    <script type="text/javascript">
+        (function() {
+            // 회원님의 Public Key
+            emailjs.init("1eClXvyi7Cegunx5J"); 
+        })();
+    </script>
+</head>
+<body>
+    <h2>🛠️ 당첨 및 메일 전송 테스트</h2>
+    
+    <div id="loading">
+        <div class="loader">🔮</div>
+        <div>시스템 점검 중입니다...</div>
+    </div>
+
+    <div id="status" style="display:none;"></div>
+    
+    <div id="winCode" class="code-box"></div>
+
+    <script>
+        // [테스트 모드] 무조건 당첨되도록 설정 (1 = 100%)
         var winRate = 1; 
-        // ============================================================
 
         function generateCode() {
             return Math.random().toString(36).substr(2, 6).toUpperCase();
         }
 
         function sendEmail(code) {
-            var templateParams = {
-                message: code 
-            };
+            var templateParams = { message: code };
             
-            // [디버깅] 전송 시작 알림
-            document.getElementById('status').innerHTML += "<br><small>📧 메일 서버 접속 시도 중...</small>";
+            // 화면에 진행 상황 표시
+            var statusDiv = document.getElementById('status');
+            statusDiv.innerHTML += "<br>📨 메일 서버(EmailJS)에 접속 시도 중...";
 
+            // 회원님의 ID 적용됨
             emailjs.send('service_yzbru09', 'template_xwa54c9', templateParams)
                 .then(function(response) {
-                    // 성공 시 팝업
-                    alert("✅ 메일 전송 성공!\n응답 코드: " + response.status + "\n이제 메일함을 확인해보세요.");
-                    document.getElementById('status').innerHTML += "<br><small style='color:blue'>전송 성공!</small>";
+                    // [성공 시]
+                    alert("✅ 성공! 메일이 발송되었습니다.\n(응답: " + response.status + ")");
+                    statusDiv.innerHTML += "<br><b style='color:blue'>✅ 메일 전송 성공!</b><br>관리자 메일함을 확인하세요.";
                 }, function(error) {
-                    // 실패 시 팝업 (여기가 중요합니다!)
-                    alert("❌ 메일 전송 실패!\n에러 내용: " + JSON.stringify(error));
-                    
-                    // 화면에도 에러 내용을 빨간 글씨로 찍어줌
-                    document.getElementById('status').innerHTML += 
-                        "<br><br><div style='color:red; text-align:left; font-size:12px; background:#eee; padding:10px;'>" + 
-                        "<b>에러 상세:</b> " + JSON.stringify(error) + "</div>";
+                    // [실패 시]
+                    alert("❌ 실패! 에러가 발생했습니다.\n화면의 에러 내용을 캡처해주세요.");
+                    console.log('FAILED...', error);
+                    statusDiv.innerHTML += "<div class='error-log'><b>⛔ 전송 실패 원인:</b><br>" + JSON.stringify(error) + "</div>";
                 });
         }
 
         window.onload = function() {
+            // 1초 뒤 실행
             setTimeout(function() {
                 var randomNum = Math.random();
                 
@@ -44,18 +88,20 @@
                     var myCode = generateCode();
                     
                     document.getElementById('status').innerHTML = 
-                        "<b>🎉 축하합니다! (당첨 테스트)</b><br>코드: " + myCode;
+                        "🎉 <b>당첨 테스트 성공!</b><br>코드 생성됨: " + myCode;
                     
                     var codeBox = document.getElementById('winCode');
                     codeBox.innerText = myCode;
                     codeBox.style.display = 'block';
 
-                    // 메일 발송 함수 실행
+                    // 메일 발송 시작
                     sendEmail(myCode); 
 
                 } else {
-                    document.getElementById('status').innerHTML = "꽝 (테스트 중이라 나올 일 없음)";
+                    document.getElementById('status').innerHTML = "꽝";
                 }
             }, 1000);
         };
     </script>
+</body>
+</html>
