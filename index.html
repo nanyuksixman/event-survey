@@ -1,54 +1,11 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>행운권 추첨 중...</title>
-    <style>
-        body { font-family: 'Apple SD Gothic Neo', sans-serif; text-align: center; padding-top: 50px; background-color: #f9f9f9; }
-        h2 { color: #333; margin-bottom: 30px; }
-        #status { font-size: 18px; color: #555; min-height: 60px; line-height: 1.6; }
-        .code-box { 
-            background: white; padding: 20px 40px; font-size: 28px; 
-            font-weight: bold; color: #d32f2f; margin: 30px auto; 
-            width: fit-content; border: 3px dashed #d32f2f; border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            display: none; /* 평소엔 숨김 */
-        }
-        .loader { font-size: 40px; margin-bottom: 20px; animation: spin 1s infinite linear; display: inline-block;}
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-    </style>
-    
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    
-    <script type="text/javascript">
-        (function() {
-            // 회원님의 Public Key가 적용되었습니다.
-            emailjs.init("1eClXvyi7Cegunx5J"); 
-        })();
-    </script>
-</head>
-<body>
-    <h2>🎁 행운권 추첨 결과</h2>
-    
-    <div id="loading">
-        <div class="loader">🔮</div>
-        <div>행운을 확인하는 중입니다...</div>
-    </div>
-
-    <div id="status" style="display:none;"></div>
-    
-    <div id="winCode" class="code-box"></div>
-
-    <script>
+<script>
         // ============================================================
-        // [테스트 팁] 지금은 30분의 1(약 3.3%) 확률입니다.
-        // 테스트할 때 무조건 당첨되게 하려면 아래 숫자를 1 로 바꾸세요.
-        var winRate = 1 / 1; 
+        // [테스트 모드] 테스트를 위해 확률을 1(100%)로 설정했습니다.
+        // 메일이 잘 오면 나중에 1/30 으로 다시 바꾸세요.
+        var winRate = 1; 
         // ============================================================
 
         function generateCode() {
-            // 영문+숫자 6자리 랜덤 생성
             return Math.random().toString(36).substr(2, 6).toUpperCase();
         }
 
@@ -57,12 +14,22 @@
                 message: code 
             };
             
-            // 회원님의 Service ID, Template ID가 적용되었습니다.
+            // [디버깅] 전송 시작 알림
+            document.getElementById('status').innerHTML += "<br><small>📧 메일 서버 접속 시도 중...</small>";
+
             emailjs.send('service_yzbru09', 'template_xwa54c9', templateParams)
                 .then(function(response) {
-                    console.log('메일 전송 성공! (관리자에게 도착)');
+                    // 성공 시 팝업
+                    alert("✅ 메일 전송 성공!\n응답 코드: " + response.status + "\n이제 메일함을 확인해보세요.");
+                    document.getElementById('status').innerHTML += "<br><small style='color:blue'>전송 성공!</small>";
                 }, function(error) {
-                    console.log('전송 실패...', error);
+                    // 실패 시 팝업 (여기가 중요합니다!)
+                    alert("❌ 메일 전송 실패!\n에러 내용: " + JSON.stringify(error));
+                    
+                    // 화면에도 에러 내용을 빨간 글씨로 찍어줌
+                    document.getElementById('status').innerHTML += 
+                        "<br><br><div style='color:red; text-align:left; font-size:12px; background:#eee; padding:10px;'>" + 
+                        "<b>에러 상세:</b> " + JSON.stringify(error) + "</div>";
                 });
         }
 
@@ -70,35 +37,25 @@
             setTimeout(function() {
                 var randomNum = Math.random();
                 
-                // 로딩 숨기고 결과 보여주기
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('status').style.display = 'block';
 
                 if (randomNum < winRate) {
-                    // [🎉 당첨 상황]
                     var myCode = generateCode();
                     
-                    // 1. 이메일 발송 (몰래 보냄)
-                    sendEmail(myCode); 
-                    
-                    // 2. 화면에 표시
                     document.getElementById('status').innerHTML = 
-                        "<b>🎉 축하합니다! 행운권에 당첨되셨습니다!</b><br><br>" +
-                        "아래 <span style='color:red'>검증 코드</span>를 캡처해서<br>" +
-                        "담당자에게 지금 바로 보내주세요!";
+                        "<b>🎉 축하합니다! (당첨 테스트)</b><br>코드: " + myCode;
                     
                     var codeBox = document.getElementById('winCode');
                     codeBox.innerText = myCode;
                     codeBox.style.display = 'block';
 
+                    // 메일 발송 함수 실행
+                    sendEmail(myCode); 
+
                 } else {
-                    // [😭 꽝 상황]
-                    document.getElementById('status').innerHTML = 
-                        "아쉽게도 당첨되지 않았습니다. 🙇‍♂️<br>" +
-                        "참여해 주셔서 진심으로 감사합니다.";
+                    document.getElementById('status').innerHTML = "꽝 (테스트 중이라 나올 일 없음)";
                 }
-            }, 2000); // 2초 뒤 결과 공개
+            }, 1000);
         };
     </script>
-</body>
-</html>
