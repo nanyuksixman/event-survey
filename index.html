@@ -3,46 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>이벤트 결과 확인</title>
+    <title>행운권 추첨 중...</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; padding-top: 100px; }
-        .loader { font-size: 24px; font-weight: bold; color: #333; line-height: 1.6; }
-    </style>
-    <script>
-        // ▼▼▼ 설정 구간 (이곳을 수정하세요) ▼▼▼
-        
-        // 1. 당첨 확률 (현재 1/30 = 약 3.3%)
-        var winRate = 1 / 2; 
-
-        // 2. 당첨됐을 때 이동할 주소 (경품 받을 정보 입력 폼)
-        var winLink = "https://naver.me/5suDTShI"; 
-
-        // 3. 꽝일 때 이동할 주소 (회사 홈페이지 등)
-        var loseLink = "https://naver.me/5HydanVz";
-
-        // ▲▲▲ 설정 끝 ▲▲▲
-
-        function checkLuck() {
-            var randomNum = Math.random(); 
-            
-            if (randomNum < winRate) {
-                alert("축하합니다! 당첨되셨습니다!\n정보 입력 페이지로 이동합니다.");
-                window.location.href = winLink;
-            } else {
-                alert("아쉽게도 당첨되지 않았습니다. \n참여해 주셔서 감사합니다.");
-                //window.location.href = loseLink;
-            }
+        body { font-family: 'Apple SD Gothic Neo', sans-serif; text-align: center; padding-top: 50px; background-color: #f9f9f9; }
+        h2 { color: #333; margin-bottom: 30px; }
+        #status { font-size: 18px; color: #555; min-height: 60px; line-height: 1.6; }
+        .code-box { 
+            background: white; padding: 20px 40px; font-size: 28px; 
+            font-weight: bold; color: #d32f2f; margin: 30px auto; 
+            width: fit-content; border: 3px dashed #d32f2f; border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: none; /* 평소엔 숨김 */
         }
-
-        window.onload = function() {
-            setTimeout(checkLuck, 1500); // 1.5초 두근두근 대기
-        };
+        .loader { font-size: 40px; margin-bottom: 20px; animation: spin 1s infinite linear; display: inline-block;}
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
+    <script type="text/javascript">
+        (function() {
+            // 회원님의 Public Key가 적용되었습니다.
+            emailjs.init("1eClXvyi7Cegunx5J"); 
+        })();
     </script>
 </head>
 <body>
-    <div class="loader">
-        결과를 추첨하고 있습니다...<br>
-        잠시만 기다려주세요!
+    <h2>🎁 행운권 추첨 결과</h2>
+    
+    <div id="loading">
+        <div class="loader">🔮</div>
+        <div>행운을 확인하는 중입니다...</div>
     </div>
+
+    <div id="status" style="display:none;"></div>
+    
+    <div id="winCode" class="code-box"></div>
+
+    <script>
+        // ============================================================
+        // [테스트 팁] 지금은 30분의 1(약 3.3%) 확률입니다.
+        // 테스트할 때 무조건 당첨되게 하려면 아래 숫자를 1 로 바꾸세요.
+        var winRate = 1 / 30; 
+        // ============================================================
+
+        function generateCode() {
+            // 영문+숫자 6자리 랜덤 생성
+            return Math.random().toString(36).substr(2, 6).toUpperCase();
+        }
+
+        function sendEmail(code) {
+            var templateParams = {
+                message: code 
+            };
+            
+            // 회원님의 Service ID, Template ID가 적용되었습니다.
+            emailjs.send('service_yzbru09', 'template_xwa54c9', templateParams)
+                .then(function(response) {
+                    console.log('메일 전송 성공! (관리자에게 도착)');
+                }, function(error) {
+                    console.log('전송 실패...', error);
+                });
+        }
+
+        window.onload = function() {
+            setTimeout(function() {
+                var randomNum = Math.random();
+                
+                // 로딩 숨기고 결과 보여주기
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('status').style.display = 'block';
+
+                if (randomNum < winRate) {
+                    // [🎉 당첨 상황]
+                    var myCode = generateCode();
+                    
+                    // 1. 이메일 발송 (몰래 보냄)
+                    sendEmail(myCode); 
+                    
+                    // 2. 화면에 표시
+                    document.getElementById('status').innerHTML = 
+                        "<b>🎉 축하합니다! 행운권에 당첨되셨습니다!</b><br><br>" +
+                        "아래 <span style='color:red'>검증 코드</span>를 캡처해서<br>" +
+                        "담당자에게 지금 바로 보내주세요!";
+                    
+                    var codeBox = document.getElementById('winCode');
+                    codeBox.innerText = myCode;
+                    codeBox.style.display = 'block';
+
+                } else {
+                    // [😭 꽝 상황]
+                    document.getElementById('status').innerHTML = 
+                        "아쉽게도 당첨되지 않았습니다. 🙇‍♂️<br>" +
+                        "참여해 주셔서 진심으로 감사합니다.";
+                }
+            }, 2000); // 2초 뒤 결과 공개
+        };
+    </script>
 </body>
 </html>
