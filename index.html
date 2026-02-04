@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>행운권 테스트 중</title>
+    <title>이벤트 결과 확인</title>
     <style>
         body { font-family: 'Apple SD Gothic Neo', sans-serif; text-align: center; padding-top: 50px; background-color: #f9f9f9; }
         h2 { color: #333; margin-bottom: 30px; }
-        #status { font-size: 16px; color: #555; min-height: 60px; line-height: 1.6; padding: 20px; }
+        #status { font-size: 16px; color: #555; line-height: 1.6; padding: 20px; }
         .code-box { 
             background: white; padding: 20px 40px; font-size: 28px; 
             font-weight: bold; color: #d32f2f; margin: 30px auto; 
@@ -17,13 +17,6 @@
         }
         .loader { font-size: 40px; margin-bottom: 20px; animation: spin 1s infinite linear; display: inline-block;}
         @keyframes spin { 100% { transform: rotate(360deg); } }
-        /* 에러 메시지 박스 스타일 */
-        .error-log {
-            background-color: #fee; color: #c00; 
-            border: 1px solid #fcc; padding: 15px; 
-            margin: 20px; font-size: 12px; text-align: left;
-            word-break: break-all;
-        }
     </style>
     
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
@@ -36,11 +29,11 @@
     </script>
 </head>
 <body>
-    <h2>🛠️ 당첨 및 메일 전송 테스트</h2>
+    <h2>🎁 행운권 추첨 결과</h2>
     
     <div id="loading">
         <div class="loader">🔮</div>
-        <div>시스템 점검 중입니다...</div>
+        <div>결과를 확인하는 중입니다...</div>
     </div>
 
     <div id="status" style="display:none;"></div>
@@ -48,8 +41,12 @@
     <div id="winCode" class="code-box"></div>
 
     <script>
-        // [테스트 모드] 무조건 당첨되도록 설정 (1 = 100%)
+        // ============================================================
+        // [중요] 테스트가 끝나면 숫자를 바꾸세요!
+        // 지금은 테스트를 위해 1 (100% 당첨)로 해놨습니다.
+        // 실제 배포할 때는 아래 숫자를 1/30 으로 고치세요.
         var winRate = 1; 
+        // ============================================================
 
         function generateCode() {
             return Math.random().toString(36).substr(2, 6).toUpperCase();
@@ -58,26 +55,20 @@
         function sendEmail(code) {
             var templateParams = { message: code };
             
-            // 화면에 진행 상황 표시
-            var statusDiv = document.getElementById('status');
-            statusDiv.innerHTML += "<br>📨 메일 서버(EmailJS)에 접속 시도 중...";
-
-            // 회원님의 ID 적용됨
+            // 수정된 ID 적용 완료!
             emailjs.send('service_yzbru09', 'template_ynu7hlo', templateParams)
                 .then(function(response) {
-                    // [성공 시]
-                    alert("✅ 성공! 메일이 발송되었습니다.\n(응답: " + response.status + ")");
-                    statusDiv.innerHTML += "<br><b style='color:blue'>✅ 메일 전송 성공!</b><br>관리자 메일함을 확인하세요.";
+                    // 성공 시
+                    alert("✅ 메일 전송 성공!\n관리자 메일함을 확인해보세요.");
+                    console.log('SUCCESS!', response.status, response.text);
                 }, function(error) {
-                    // [실패 시]
-                    alert("❌ 실패! 에러가 발생했습니다.\n화면의 에러 내용을 캡처해주세요.");
+                    // 실패 시
+                    alert("❌ 메일 전송 실패...\n에러: " + JSON.stringify(error));
                     console.log('FAILED...', error);
-                    statusDiv.innerHTML += "<div class='error-log'><b>⛔ 전송 실패 원인:</b><br>" + JSON.stringify(error) + "</div>";
                 });
         }
 
         window.onload = function() {
-            // 1초 뒤 실행
             setTimeout(function() {
                 var randomNum = Math.random();
                 
@@ -85,22 +76,27 @@
                 document.getElementById('status').style.display = 'block';
 
                 if (randomNum < winRate) {
+                    // [당첨]
                     var myCode = generateCode();
                     
                     document.getElementById('status').innerHTML = 
-                        "🎉 <b>당첨 테스트 성공!</b><br>코드 생성됨: " + myCode;
+                        "<b>🎉 축하합니다! 당첨되셨습니다!</b><br><br>" +
+                        "아래 <span style='color:red'>검증 코드</span>를 캡처해서<br>" +
+                        "담당자에게 보내주세요.";
                     
                     var codeBox = document.getElementById('winCode');
                     codeBox.innerText = myCode;
                     codeBox.style.display = 'block';
 
-                    // 메일 발송 시작
+                    // 메일 발송
                     sendEmail(myCode); 
 
                 } else {
-                    document.getElementById('status').innerHTML = "꽝";
+                    // [꽝]
+                    document.getElementById('status').innerHTML = 
+                        "아쉽게도 당첨되지 않았습니다. 😭<br>참여해 주셔서 감사합니다.";
                 }
-            }, 1000);
+            }, 1500);
         };
     </script>
 </body>
