@@ -3,128 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 테크그룹 설문조사 참여 이벤트 결과 확인</title>
+    <title>이벤트 참여</title>
     <style>
-        body { font-family: 'Apple SD Gothic Neo', sans-serif; text-align: center; padding-top: 50px; background-color: #f9f9f9; }
+        body { font-family: 'Apple SD Gothic Neo', sans-serif; text-align: center; padding-top: 30px; background-color: #f9f9f9; }
+        .container { max-width: 400px; margin: 0 auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         h2 { color: #333; margin-bottom: 20px; }
         
-        button { background-color: #4a90e2; color: white; border: none; padding: 15px 40px; font-size: 18px; border-radius: 30px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.2s; }
-        button:hover { background-color: #357abd; transform: translateY(-2px); }
-        button:disabled { background-color: #ccc; cursor: not-allowed; transform: none; }
-
-        input { padding: 10px; font-size: 16px; width: 200px; margin-right: 5px; border: 1px solid #ddd; border-radius: 5px; text-align: center; }
-
-        #status { font-size: 16px; color: #555; line-height: 1.6; padding: 20px; margin-top: 20px;}
-        .code-box { background: white; padding: 20px; font-size: 24px; font-weight: bold; color: #d32f2f; margin: 20px auto; width: fit-content; border: 2px dashed #d32f2f; border-radius: 10px; display: none; }
-        #winnerForm { display: none; margin-top: 20px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: fit-content; margin-left: auto; margin-right: auto;}
+        /* 입력창 스타일 */
+        input { padding: 12px; font-size: 16px; width: 80%; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; text-align: center; }
+        
+        button { background-color: #4a90e2; color: white; border: none; padding: 15px 0; font-size: 18px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        
+        .code-box { background: #fff5f5; padding: 15px; border: 2px dashed #ff6b6b; border-radius: 10px; color: #ff6b6b; font-weight: bold; font-size: 24px; margin-top: 20px; display: none; }
+        .step { display: none; }
+        .step.active { display: block; }
     </style>
     
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script type="text/javascript">
-        (function() {
-            emailjs.init("1eClXvyi7Cegunx5J"); // 회원님 Key
-        })();
+        (function() { emailjs.init("1eClXvyi7Cegunx5J"); })(); // 회원님 Key
     </script>
 </head>
 <body>
-    <h2>🎁 행운권 추첨</h2>
+    <div class="container">
+        
+        <div id="step1" class="step active">
+            <h2>🎁 행운권 추첨</h2>
+            <p>설문에 참여해 주셔서 감사합니다.<br>기회는 단 한 번입니다!</p>
+            <button onclick="tryLucky()" id="btnStart">🎲 결과 확인하기</button>
+        </div>
 
-    <div id="startScreen">
-        <p style="color:#666; margin-bottom: 30px;">
-            설문에 참여해 주셔서 감사합니다.<br>
-            아래 버튼을 눌러 행운을 확인하세요!
-        </p>
-        <button onclick="checkLuck()" id="btnStart">🎲 결과 확인하기</button>
+        <div id="step2" class="step">
+            <h2 style="color:#4a90e2">🎉 축하합니다!</h2>
+            <p>경품 지급을 위해 정보를 입력해주세요.<br>(타인에게 공개되지 않습니다)</p>
+            
+            <input type="text" id="dept" placeholder="부서명 (예: 테크그룹)">
+            <input type="text" id="name" placeholder="성함 (예: 김국민)">
+            
+            <button onclick="submitInfo()">입력 완료</button>
+        </div>
+
+        <div id="step3" class="step">
+            <h2>확인 중...</h2>
+            <p>선착순(30명) 마감 여부를<br>실시간 조회 중입니다.</p>
+            <div style="font-size:30px;">⏳</div>
+        </div>
+
+        <div id="step4" class="step">
+            <h2 id="finalTitle"></h2>
+            <div id="finalMsg"></div>
+            <div id="winCode" class="code-box"></div>
+        </div>
     </div>
-
-    <div id="status"></div>
-
-    <div id="winnerForm">
-        <p style="font-size:14px; color:#4a90e2; font-weight:bold;">🎉 축하합니다! 경품 발송을 위해<br>연락처를 입력해주세요.</p>
-        <input type="text" id="userContact" placeholder="010-XXXX-XXXX">
-        <button onclick="submitWinner()" style="padding: 10px 20px; font-size: 14px;">전송</button>
-    </div>
-
-    <div id="winCode" class="code-box"></div>
 
     <script>
         // ============================================================
-        // [설정 1] 행운의 시간 (분) 설정
-        // 예: [10, 30, 50] -> 매 시간 10분, 30분, 50분 대(0초~59초)에만 당첨 가능
-        // 0~59 사이의 숫자를 원하는 만큼 넣으세요.
-        var luckyMinutes = [15, 30, 45, 0]; 
+        // [설정 1] 카운터 정보 (CountAPI) - 아까 만든 거 그대로 쓰세요!
+        var counterNamespace = "my_lucky_event"; 
+        var counterKey = "winner_count";         
 
-        // [설정 2] 기본 당첨 확률 (1/30 = 약 0.033)
-        // 테스트할 땐 1.0 (100%)으로 하시고, 배포 시 0.033 정도로 낮추세요.
-        var baseWinRate = 1.0; 
+        // [설정 2] 행운의 분 (매 시간 0~59분 중 당첨 가능한 분)
+        var luckyMinutes = [10, 20, 30, 40, 50, 0]; 
+        
+        // [설정 3] 당첨자 제한 수 (30명)
+        var maxWinners = 30;
+        
+        // [설정 4] 확률 (테스트 후 1/30 로 변경)
+        var baseWinRate = 1/30; 
         // ============================================================
         
         var generatedCode = "";
+        var userDept = "";
+        var userName = "";
 
-        function checkLuck() {
-            var btn = document.getElementById('btnStart');
-            btn.disabled = true;
-            btn.innerText = "확인 중...";
+        // 페이지 로드 시 중복 참여 체크
+        window.onload = function() {
+            if (localStorage.getItem('hasPlayed') === 'yes') {
+                alert("이미 추첨에 참여하셨습니다. ✋");
+                document.getElementById('step1').innerHTML = "<h2>참여 완료</h2><p>이미 참여하셨습니다.<br>감사합니다.</p>";
+            }
+        }
+
+        function tryLucky() {
+            document.getElementById('btnStart').disabled = true;
+            document.getElementById('btnStart').innerText = "확인 중...";
+            
+            // "참여함" 도장 찍기
+            localStorage.setItem('hasPlayed', 'yes');
 
             setTimeout(function() {
-                // 1. 현재 시간 체크 (분)
                 var currentMinute = new Date().getMinutes();
                 var isLuckyTime = luckyMinutes.includes(currentMinute);
-
-                // 2. 재시도 횟수 체크 (패널티 적용)
-                var tryCount = parseInt(localStorage.getItem('tryCount') || '0');
-                localStorage.setItem('tryCount', tryCount + 1); // 횟수 증가
-
-                // 3. 최종 확률 계산
-                var finalRate = baseWinRate;
                 
-                // 재시도할 때마다 확률을 반토막 냄 (1회차: 100%, 2회차: 50%, 3회차: 25%...)
-                if (tryCount > 0) {
-                    finalRate = finalRate / Math.pow(2, tryCount);
-                    console.log("재시도 감지! 확률 감소됨: " + finalRate);
-                }
-
-                // 4. 추첨 로직 실행
-                // (조건: 럭키타임이어야 함 AND 주사위가 확률 안에 들어야 함)
-                if (isLuckyTime && Math.random() < finalRate) {
-                    // [당첨!]
-                    showWinnerForm();
+                // 1차 추첨 (시간 + 확률)
+                if (isLuckyTime && Math.random() < baseWinRate) {
+                    // 1차 당첨 -> 정보 입력 화면으로 이동
+                    changeStep(2);
                 } else {
-                    // [꽝!]
-                    showLose();
+                    // 꽝 -> 종료
+                    showResult("아쉽네요 😭", "당첨되지 않았습니다.<br>참여해 주셔서 감사합니다.", false);
                 }
-                
-                document.getElementById('startScreen').style.display = 'none';
-
             }, 1000);
         }
 
-        function showWinnerForm() {
-            generatedCode = Math.random().toString(36).substr(2, 6).toUpperCase();
-            document.getElementById('winnerForm').style.display = 'block';
+        function submitInfo() {
+            var deptInput = document.getElementById('dept').value;
+            var nameInput = document.getElementById('name').value;
+
+            if (deptInput.length < 1 || nameInput.length < 1) {
+                return alert("부서와 성함을 모두 입력해주세요.");
+            }
+
+            userDept = deptInput;
+            userName = nameInput;
+
+            // 정보 입력 후 카운터 확인하러 이동
+            changeStep(3);
+            checkCounterLimit();
         }
 
-        function showLose() {
-            document.getElementById('status').innerHTML = 
-                "아쉽게도 당첨되지 않았습니다. 😭<br>참여해 주셔서 감사합니다.";
+        // CountAPI 확인 및 이메일 전송
+        function checkCounterLimit() {
+            // 숫자 1 올리면서(hit) 현재 값 가져오기
+            var apiUrl = "https://api.countapi.xyz/hit/" + counterNamespace + "/" + counterKey;
+
+            fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                var currentCount = data.value; // 현재 당첨자 수
+
+                if (currentCount <= maxWinners) {
+                    // [최종 당첨]
+                    generatedCode = Math.random().toString(36).substr(2, 6).toUpperCase();
+                    
+                    // 메일 발송 내용 수정됨 (부서/성함 포함)
+                    var params = { 
+                        message: "부서: " + userDept + " / 성함: " + userName + " / 코드: " + generatedCode + " / 순번: " + currentCount + "등" 
+                    };
+                    
+                    emailjs.send('service_yzbru09', 'template_ynu7hlo', params);
+                    
+                    showResult("🎉 최종 당첨!", "축하합니다! <b>" + currentCount + "번째</b> 당첨자입니다.<br>아래 코드를 캡처해주세요.", true);
+                } else {
+                    // [마감]
+                    showResult("선착순 마감", "아쉽게도 30명이 모두 마감되었습니다.<br>이벤트가 종료되었습니다.", false);
+                }
+            })
+            .catch(error => {
+                // API 에러 시 안전하게 꽝 처리
+                console.log(error);
+                showResult("접속 폭주", "일시적인 오류로 확인에 실패했습니다.<br>잠시 후 다시 시도해주세요.", false);
+            });
         }
 
-        function submitWinner() {
-            var contact = document.getElementById('userContact').value;
-            if (contact.length < 9) { alert("연락처를 정확히 입력해주세요."); return; }
+        function showResult(title, msg, isWin) {
+            changeStep(4);
+            document.getElementById('finalTitle').innerText = title;
+            document.getElementById('finalMsg').innerHTML = msg;
+            if (isWin) {
+                var box = document.getElementById('winCode');
+                box.innerText = generatedCode;
+                box.style.display = 'block';
+            }
+        }
 
-            document.getElementById('winnerForm').style.display = 'none';
-            document.getElementById('status').innerHTML = "서버로 전송 중...";
-
-            var params = { message: "연락처: " + contact + " / 코드: " + generatedCode };
-            
-            emailjs.send('service_yzbru09', 'template_ynu7hlo', params)
-                .then(function() {
-                    document.getElementById('status').innerHTML = "<b>✅ 접수 완료되었습니다!</b>";
-                    var codeBox = document.getElementById('winCode');
-                    codeBox.innerText = generatedCode;
-                    codeBox.style.display = 'block';
-                });
+        function changeStep(num) {
+            document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+            document.getElementById('step' + num).classList.add('active');
         }
     </script>
 </body>
