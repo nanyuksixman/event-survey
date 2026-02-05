@@ -36,9 +36,9 @@
 
         <div id="step2" class="step">
             <h2 style="color:#4a90e2">🎉 축하합니다!</h2>
-            <p>경품 지급을 위해 정보를 입력해주세요.<br>(익명성 보장을 위해 타인에게 공개되지 않으며, 부정행위를 판별하기 위해 Key값이 부여됩니다.)</p>
+            <p>경품 전달을 위해 정보를 입력해주세요.<br>익명성 보장을 위해 타인에게 공개되지 않으며, 부정행위를 판별하기 위해 코드값이 부여됩니다.</p>
             
-            <input type="text" id="dept" placeholder="부서명 (예: 테크그룹)">
+            <input type="text" id="dept" placeholder="부서명 (예: 테크기획부)">
             <input type="text" id="name" placeholder="성함 (예: 김국민)">
             
             <button onclick="submitInfo()">전송하고 코드 받기</button>
@@ -61,11 +61,11 @@
         // ============================================================
         // [설정 1] 행운의 분 (매 시간 0~59분 중 당첨 가능한 분)
         // 예: [10, 30, 50] -> 매 시간 10분대, 30분대, 50분대에만 당첨 가능
-        var luckyMinutes = [55, 56, 57, 58]; 
+        var luckyMinutes = [10, 30, 50]; 
         
         // [설정 2] 확률 (테스트 할 땐 1, 배포 시 1/30 로 변경!)
-        //var baseWinRate = 1/30; 
-        var baseWinRate = 1; 
+        var baseWinRate = 1/30; 
+        //var baseWinRate = 1; 
         // ============================================================
         
         var generatedCode = "";
@@ -97,7 +97,7 @@
                     changeStep(2);
                 } else {
                     // 꽝 -> 종료
-                    showResult("아쉽네요 😭", "당첨되지 않았습니다.<br>참여해 주셔서 감사합니다.", false);
+                    showResult("아쉽네요 😭", "당첨되지 않았습니다.<br> 앞으로도 테크그룹 변화에 많은 관심을 부탁드립니다. 감사합니다.", false);
                 }
             }, 1000);
         }
