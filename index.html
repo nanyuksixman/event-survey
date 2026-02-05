@@ -29,25 +29,25 @@
     <div class="container">
         
         <div id="step1" class="step active">
-            <h2>🎁 행운권 추첨</h2>
-            <p>설문에 참여해 주셔서 감사합니다.<br>기회는 단 한 번입니다!</p>
+            <h2>🎁 2026 테크그룹 설문조사 참여 행운권 추첨</h2>
+            <p>설문에 참여해 주셔서 감사합니다.</p>
             <button onclick="tryLucky()" id="btnStart">🎲 결과 확인하기</button>
         </div>
 
         <div id="step2" class="step">
             <h2 style="color:#4a90e2">🎉 축하합니다!</h2>
-            <p>경품 지급을 위해 정보를 입력해주세요.<br>(타인에게 공개되지 않습니다)</p>
+            <p>경품 지급을 위해 정보를 입력해주세요.<br>(익명성 보장을 위해 타인에게 공개되지 않으며, 부정행위를 판별하기 위해 Key값이 부여됩니다.)</p>
             
             <input type="text" id="dept" placeholder="부서명 (예: 테크그룹)">
             <input type="text" id="name" placeholder="성함 (예: 김국민)">
             
-            <button onclick="submitInfo()">입력 완료</button>
+            <button onclick="submitInfo()">전송하고 코드 받기</button>
         </div>
 
         <div id="step3" class="step">
-            <h2>확인 중...</h2>
-            <p>선착순(30명) 마감 여부를<br>실시간 조회 중입니다.</p>
-            <div style="font-size:30px;">⏳</div>
+            <h2>전송 중...</h2>
+            <p>정보를 안전하게 보내고 있습니다.</p>
+            <div style="font-size:30px;">📨</div>
         </div>
 
         <div id="step4" class="step">
@@ -59,17 +59,11 @@
 
     <script>
         // ============================================================
-        // [설정 1] 카운터 정보 (CountAPI) - 아까 만든 거 그대로 쓰세요!
-        var counterNamespace = "my_lucky_event"; 
-        var counterKey = "winner_count";         
-
-        // [설정 2] 행운의 분 (매 시간 0~59분 중 당첨 가능한 분)
-        var luckyMinutes = [10, 20, 30, 40, 50, 0]; 
+        // [설정 1] 행운의 분 (매 시간 0~59분 중 당첨 가능한 분)
+        // 예: [10, 30, 50] -> 매 시간 10분대, 30분대, 50분대에만 당첨 가능
+        var luckyMinutes = [53,54,55]; 
         
-        // [설정 3] 당첨자 제한 수 (30명)
-        var maxWinners = 30;
-        
-        // [설정 4] 확률 (테스트 후 1/30 로 변경)
+        // [설정 2] 확률 (테스트 할 땐 1, 배포 시 1/30 로 변경!)
         var baseWinRate = 1/30; 
         // ============================================================
         
@@ -96,9 +90,9 @@
                 var currentMinute = new Date().getMinutes();
                 var isLuckyTime = luckyMinutes.includes(currentMinute);
                 
-                // 1차 추첨 (시간 + 확률)
+                // 추첨 (시간 + 확률)
                 if (isLuckyTime && Math.random() < baseWinRate) {
-                    // 1차 당첨 -> 정보 입력 화면으로 이동
+                    // 당첨! -> 정보 입력 화면으로 이동
                     changeStep(2);
                 } else {
                     // 꽝 -> 종료
@@ -118,43 +112,27 @@
             userDept = deptInput;
             userName = nameInput;
 
-            // 정보 입력 후 카운터 확인하러 이동
+            // 전송 중 화면 보여주기
             changeStep(3);
-            checkCounterLimit();
-        }
 
-        // CountAPI 확인 및 이메일 전송
-        function checkCounterLimit() {
-            // 숫자 1 올리면서(hit) 현재 값 가져오기
-            var apiUrl = "https://api.countapi.xyz/hit/" + counterNamespace + "/" + counterKey;
-
-            fetch(apiUrl)
-            .then(response => response.json())
-            .then(data => {
-                var currentCount = data.value; // 현재 당첨자 수
-
-                if (currentCount <= maxWinners) {
-                    // [최종 당첨]
-                    generatedCode = Math.random().toString(36).substr(2, 6).toUpperCase();
-                    
-                    // 메일 발송 내용 수정됨 (부서/성함 포함)
-                    var params = { 
-                        message: "부서: " + userDept + " / 성함: " + userName + " / 코드: " + generatedCode + " / 순번: " + currentCount + "등" 
-                    };
-                    
-                    emailjs.send('service_yzbru09', 'template_ynu7hlo', params);
-                    
-                    showResult("🎉 최종 당첨!", "축하합니다! <b>" + currentCount + "번째</b> 당첨자입니다.<br>아래 코드를 캡처해주세요.", true);
-                } else {
-                    // [마감]
-                    showResult("선착순 마감", "아쉽게도 30명이 모두 마감되었습니다.<br>이벤트가 종료되었습니다.", false);
-                }
-            })
-            .catch(error => {
-                // API 에러 시 안전하게 꽝 처리
-                console.log(error);
-                showResult("접속 폭주", "일시적인 오류로 확인에 실패했습니다.<br>잠시 후 다시 시도해주세요.", false);
-            });
+            // 코드 생성 및 이메일 전송
+            generatedCode = Math.random().toString(36).substr(2, 6).toUpperCase();
+            
+            var params = { 
+                message: "부서: " + userDept + " / 성함: " + userName + " / 코드: " + generatedCode 
+            };
+            
+            emailjs.send('service_yzbru09', 'template_ynu7hlo', params)
+                .then(function() {
+                    // 성공 시 결과 화면
+                    showResult("🎉 최종 당첨!", "축하합니다!<br>아래 코드를 캡처해서 보관해주세요.", true);
+                }, function(error) {
+                    // 실패 시 에러 화면
+                    console.log(error);
+                    showResult("전송 실패", "오류가 발생했습니다.<br>화면을 캡처해 담당자에게 문의해주세요.", false);
+                    document.getElementById('winCode').innerText = "코드: " + generatedCode + " (전송오류)";
+                    document.getElementById('winCode').style.display = 'block';
+                });
         }
 
         function showResult(title, msg, isWin) {
