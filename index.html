@@ -59,10 +59,24 @@
 
     <script>
         // ============================================================
-        // [설정 1] 행운의 분 (매 시간 0~59분 중 당첨 가능한 분)
-        // 예: [10, 30, 50] -> 매 시간 10분대, 30분대, 50분대에만 당첨 가능
-        var luckyMinutes = [10, 30, 50]; 
+        // ✋ 잠깐! F12 눌러서 소스 보고 계신 개발자님...
+        // 재미로 하는 이벤트니 너무 Deep하게(IT적으로) 파고들지 말아주세요 ㅋㅋ 😉 (확률 조작 금지!)
+        // ============================================================
+
+        // [설정 1] 행운의 분 (0~59분 중 3개를 랜덤으로 선택)
+        var luckyMinutes = [];
         
+        // 중복 없이 3개의 숫자를 뽑는 로직
+        while(luckyMinutes.length < 3){
+            var r = Math.floor(Math.random() * 60); // 0 ~ 59 생성
+            if(luckyMinutes.indexOf(r) === -1) {    // 중복 체크
+                luckyMinutes.push(r);
+            }
+        }
+        
+        // (콘솔에는 힌트 남겨둠)
+        console.log("📢 이번 타임 행운의 분(Minute):", luckyMinutes);
+
         // [설정 2] 확률 (테스트 할 땐 1, 배포 시 1/30 로 변경!)
         var baseWinRate = 1/30; 
         //var baseWinRate = 1; 
@@ -91,7 +105,7 @@
                 var currentMinute = new Date().getMinutes();
                 var isLuckyTime = luckyMinutes.includes(currentMinute);
                 
-                // 추첨 (시간 + 확률)
+                // 추첨 (시간 조건 + 확률 조건)
                 if (isLuckyTime && Math.random() < baseWinRate) {
                     // 당첨! -> 정보 입력 화면으로 이동
                     changeStep(2);
@@ -125,10 +139,8 @@
             
             emailjs.send('service_yzbru09', 'template_ynu7hlo', params)
                 .then(function() {
-                    // 성공 시 결과 화면
                     showResult("🎉 최종 당첨!", "축하합니다!<br>아래 코드를 캡처해서 보관해주세요.", true);
                 }, function(error) {
-                    // 실패 시 에러 화면
                     console.log(error);
                     showResult("전송 실패", "오류가 발생했습니다.<br>화면을 캡처해 담당자에게 문의해주세요.", false);
                     document.getElementById('winCode').innerText = "코드: " + generatedCode + " (전송오류)";
